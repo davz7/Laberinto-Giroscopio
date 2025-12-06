@@ -3,23 +3,32 @@ package mx.edu.laberinto_giroscopio.data.network
 import mx.edu.laberinto_giroscopio.data.model.UserDto
 
 import mx.edu.laberinto_giroscopio.data.model.ScoreDto
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
     @GET("users")
-    suspend fun getUsers(): List<UserDto>
+    suspend fun getUsersResponse(): Response<List<UserDto>>
+
     @POST("users")
-    suspend fun createUser(@Body user: UserDto): UserDto
+    suspend fun createUserResponse(@Body user: UserDto): Response<UserDto>
+
     @PUT("users/{id}")
-    suspend fun updateUser(@Path("id") id: Long, @Body user: UserDto): UserDto
+    suspend fun updateUserResponse(@Path("id") id: Long, @Body user: UserDto): Response<UserDto>
+
     @DELETE("users/{id}")
-    suspend fun deleteUser(@Path("id") id: Long)
+    suspend fun deleteUserResponse(@Path("id") id: Long): Response<Unit>
+
+
     @GET("scores")
-    suspend fun getScores(): List<ScoreDto>
+    suspend fun getScoresResponse(): Response<List<ScoreDto>>
+
     @POST("scores")
-    suspend fun createScore(@Body score: ScoreDto): ScoreDto
+    suspend fun createScoreResponse(@Body score: ScoreDto): Response<ScoreDto>
+
     @PUT("scores/{id}")
-    suspend fun updateScore(@Path("id") id: Long, @Body score: ScoreDto): ScoreDto
+    suspend fun updateScoreResponse(@Path("id") id: Long, @Body score: ScoreDto): Response<ScoreDto>
+
     @DELETE("scores/{id}")
-    suspend fun deleteScore(@Path("id") id: Long)
+    suspend fun deleteScoreResponse(@Path("id") id: Long): Response<Unit>
 }
