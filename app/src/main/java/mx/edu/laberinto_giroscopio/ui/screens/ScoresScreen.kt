@@ -8,14 +8,41 @@ import mx.edu.laberinto_giroscopio.viewmodel.ScoreViewModel
 
 @Composable
 fun ScoresScreen(vm: ScoreViewModel) {
-    val scores by vm.scores.collectAsState()
+
+    val state = vm.state.collectAsState().value
+
     LaunchedEffect(Unit) {
         vm.loadScores()
     }
+
     Column(Modifier.padding(20.dp)) {
-        scores.forEach {
-            Text("User: ${it.userId} | Score: ${it.score}")
-            Spacer(Modifier.height(10.dp))
+
+        when {
+            state.loading -> {
+                CircularProgressIndicator()
+            }
+
+            state.error != null -> {
+                Text("Error: ${state.error}")
+                Button(onClick = { vm.loadScores() }) {
+                    Text("Reintentar")
+                }
+            }
+
+            state.data != null -> {
+                state.data.forEach {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("User: ${it.userId} | Score: ${it.score}")
+
+                        Row {
+                            Button(onClick = { vm.deleteScore(it.id!!) }) {
+                                Text("Eliminar")
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
+            }
         }
     }
 }
