@@ -1,39 +1,70 @@
 package mx.edu.laberinto_giroscopio.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import mx.edu.laberinto_giroscopio.ui.components.AppBackground
+import mx.edu.laberinto_giroscopio.ui.components.AppButton
+import mx.edu.laberinto_giroscopio.ui.components.AppCard
+import mx.edu.laberinto_giroscopio.ui.components.AppOutlinedButton
+import mx.edu.laberinto_giroscopio.ui.components.AppSubtitle
+import mx.edu.laberinto_giroscopio.ui.components.AppTextField
+import mx.edu.laberinto_giroscopio.ui.components.AppTitle
 import mx.edu.laberinto_giroscopio.viewmodel.UserViewModel
 
 @Composable
 fun LoginScreen(nav: NavController, vm: UserViewModel) {
     var name by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
-    Column(Modifier.padding(20.dp)) {
-        TextField(value = name, onValueChange = { name = it }, label = { Text("Usuario") })
-        TextField(value = pass, onValueChange = { pass = it }, label = { Text("Contraseña") })
-        Button(onClick = {
-            vm.login(name, pass)
-            if (vm.currentUser.value != null) nav.navigate("home")
-        }) {
-            Text("Iniciar sesión")
-        }
-        Button(onClick = {
-            vm.register(name, pass)
-            nav.navigate("home")
-        }) {
-            Text("Registrarse")
+
+    AppBackground {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp), // margen global
+            contentAlignment = Alignment.Center
+        ) {
+
+            AppCard {
+            AppTitle("Bienvenido")
+            Spacer(Modifier.height(6.dp))
+            AppSubtitle("Inicia sesión para continuar")
+            Spacer(Modifier.height(20.dp))
+
+            AppTextField(name, { name = it }, "Usuario", Modifier.fillMaxWidth())
+            Spacer(Modifier.height(15.dp))
+            AppTextField(
+                pass, { pass = it },
+                "Contraseña",
+                Modifier.fillMaxWidth(),
+                visual = PasswordVisualTransformation()
+            )
+            Spacer(Modifier.height(30.dp))
+
+            AppButton(
+                text = "Iniciar sesión",
+                onClick = {
+                    vm.login(name, pass)
+                    if (vm.currentUser.value != null) nav.navigate("home")
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            AppOutlinedButton(
+                text = "Registrarse",
+                onClick = {
+                    vm.register(name, pass)
+                    nav.navigate("home")
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            )
+            }
         }
     }
 }
-

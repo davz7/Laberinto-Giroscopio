@@ -28,7 +28,12 @@ fun AppNavigation() {
     ) {
         composable("login") { LoginScreen(nav, userVM) }
         composable("home") { HomeScreen(nav) }
-        composable("game") { GameScreen(gameVM) }
+        composable(route = "game") {
+            GameScreen(
+                vm = gameVM,
+                onBack = { nav.popBackStack() }   // regresar a la pantalla anterior
+            )
+        }
         composable("scores") { ScoresScreen(scoreVM) }
     }
 }

@@ -1,36 +1,28 @@
 package mx.edu.laberinto_giroscopio.ui.screens
 
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import mx.edu.laberinto_giroscopio.data.sensors.GyroscopeSensorManager
 import mx.edu.laberinto_giroscopio.viewmodel.GameViewModel
+import mx.edu.laberinto_giroscopio.data.sensors.GyroscopeSensorManager
+import mx.edu.laberinto_giroscopio.ui.components.*
 
 @Composable
-fun GameScreen(vm: GameViewModel) {
+fun GameScreen(vm: GameViewModel, onBack: () -> Unit) {
 
     val context = LocalContext.current
-
     val pos by vm.ballPos
     val maze by vm.maze
 
     val gyro = remember {
         GyroscopeSensorManager(
             context,
-            onRotation = { x, y, _ ->
-                vm.move(x, y)
-            },
+            onRotation = { x, y, _ -> vm.move(x, y) },
             onUnavailable = { }
         )
     }
@@ -40,33 +32,53 @@ fun GameScreen(vm: GameViewModel) {
         onDispose { gyro.stop() }
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-    ) {
-        maze.forEachIndexed { r, row ->
-            row.forEachIndexed { c, cell ->
-                val color = when (cell) {
-                    1 -> Color.Gray
-                    2 -> Color.Green
-                    3 -> Color.Red
-                    else -> Color.DarkGray
-                }
-                Box(
-                    Modifier
-                        .offset((c * 80).dp, (r * 80).dp)
-                        .size(80.dp)
-                        .background(color)
-                )
-            }
-        }
+    AppBackground {
 
-        Box(
-            Modifier
-                .offset(pos.x.dp, pos.y.dp)
-                .size(40.dp)
-                .background(Color.Cyan, CircleShape)
-        )
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            AppTopBar(title = "Juego", onBack = onBack)
+
+            Spacer(Modifier.height(20.dp))
+
+            // 🔥 Añadimos weight para centrar verticalmente
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                MazeContainer(
+                    rows = maze.size,
+                    cols = maze[0].size,
+                    cellSize = 45 // tamaño más profesional
+                ) {
+                    Box {
+
+                        maze.forEachIndexed { r, row ->
+                            row.forEachIndexed { c, cell ->
+                                Box(
+                                    Modifier.offset((c * 45).dp, (r * 45).dp)
+                                ) {
+                                    MazeCell(type = cell)
+                                }
+                            }
+                        }
+
+                        Box(
+                            Modifier.offset(
+                                (pos.x).dp,   // Ajuste horizontal
+                                (pos.y).dp    // Ajuste vertical
+                            )
+                        ) {
+                            MazeBall()
+                        }
+
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(30.dp))
+        }
     }
 }

@@ -8,8 +8,9 @@ import mx.edu.laberinto_giroscopio.data.model.Levels
 
 class GameViewModel : ViewModel() {
 
-    private val tileSize = 80f
-
+    // Tamaño real de la celda en la UI (45dp → 45f px lógicos)
+    private val tileSize = 45f
+    private val ballRadius = 20f
     private val _maze = mutableStateOf(Levels.level1)
     val maze: State<Array<IntArray>> = _maze
 
@@ -18,12 +19,21 @@ class GameViewModel : ViewModel() {
 
     init {
         val start = findStart()
-        _ballPos.value = Offset(start.first * tileSize, start.second * tileSize)
+        val centerFix = (tileSize / 2f) - ballRadius
+
+        _ballPos.value = Offset(
+            x = start.first * tileSize + centerFix,
+            y = start.second * tileSize + centerFix
+        )
     }
 
     fun move(x: Float, y: Float) {
-        val nx = _ballPos.value.x + (-y * 15)
-        val ny = _ballPos.value.y + (x * 15)
+        // Ajusta la velocidad para que coincida con el nuevo tamaño
+        val speed = 10f
+
+        val nx = _ballPos.value.x + (-y * speed)
+        val ny = _ballPos.value.y + (x * speed)
+
         if (!isWall(nx, ny)) {
             _ballPos.value = Offset(nx, ny)
         }
@@ -32,8 +42,12 @@ class GameViewModel : ViewModel() {
     private fun isWall(x: Float, y: Float): Boolean {
         val col = (x / tileSize).toInt()
         val row = (y / tileSize).toInt()
+
         val m = _maze.value
-        if (row < 0 || row >= m.size || col < 0 || col >= m[row].size) return true
+
+        if (row < 0 || row >= m.size || col < 0 || col >= m[row].size)
+            return true
+
         return m[row][col] == 1
     }
 
