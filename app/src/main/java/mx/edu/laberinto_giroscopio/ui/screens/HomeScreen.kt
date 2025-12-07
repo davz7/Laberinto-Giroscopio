@@ -22,4 +22,5 @@ fun HomeScreen(nav: NavController) {
             Text("Cerrar sesión")
         }
     }
+}
 

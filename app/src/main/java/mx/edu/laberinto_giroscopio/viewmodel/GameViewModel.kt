@@ -1,55 +1,49 @@
 package mx.edu.laberinto_giroscopio.viewmodel
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import mx.edu.laberinto_giroscopio.data.model.Levels
 
-class GameViewModel(
-    private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+class GameViewModel : ViewModel() {
 
-    private val tile = 80f
+    private val tileSize = 80f
 
-    private var levelIndex = savedStateHandle["level"] ?: 0
-    private var maze = Levels.allLevels[levelIndex]
+    private val _maze = mutableStateOf(Levels.level1)
+    val maze: State<Array<IntArray>> = _maze
 
-    private val _ball = MutableStateFlow(
-        Offset(
-            savedStateHandle["x"] ?: findStart().first * tile,
-            savedStateHandle["y"] ?: findStart().second * tile
-        )
-    )
-    val ball: StateFlow<Offset> = _ball
+    private val _ballPos = mutableStateOf(Offset.Zero)
+    val ballPos: State<Offset> = _ballPos
 
-    private fun saveState() {
-        savedStateHandle["x"] = _ball.value.x
-        savedStateHandle["y"] = _ball.value.y
-        savedStateHandle["level"] = levelIndex
+    init {
+        val start = findStart()
+        _ballPos.value = Offset(start.first * tileSize, start.second * tileSize)
     }
 
     fun move(x: Float, y: Float) {
-        val nx = _ball.value.x + (-y * 15)
-        val ny = _ball.value.y + (x * 15)
-
+        val nx = _ballPos.value.x + (-y * 15)
+        val ny = _ballPos.value.y + (x * 15)
         if (!isWall(nx, ny)) {
-            _ball.value = Offset(nx, ny)
-            saveState()
-
-            if (isGoal(nx, ny)) nextLevel()
+            _ballPos.value = Offset(nx, ny)
         }
     }
 
-    private fun nextLevel() {
-        levelIndex++
-        if (levelIndex >= Levels.allLevels.size) levelIndex = 0
+    private fun isWall(x: Float, y: Float): Boolean {
+        val col = (x / tileSize).toInt()
+        val row = (y / tileSize).toInt()
+        val m = _maze.value
+        if (row < 0 || row >= m.size || col < 0 || col >= m[row].size) return true
+        return m[row][col] == 1
+    }
 
-        maze = Levels.allLevels[levelIndex]
-
-        val start = findStart()
-        _ball.value = Offset(start.first * tile, start.second * tile)
-        saveState()
+    private fun findStart(): Pair<Int, Int> {
+        val m = _maze.value
+        for (r in m.indices) {
+            for (c in m[r].indices) {
+                if (m[r][c] == 2) return c to r
+            }
+        }
+        return 1 to 1
     }
 }
