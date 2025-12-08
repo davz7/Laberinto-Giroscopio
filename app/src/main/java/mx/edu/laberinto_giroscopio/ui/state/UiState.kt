@@ -1,7 +1,7 @@
-package mx.edu.laberinto_giroscopio.ui.state
+import mx.edu.laberinto_giroscopio.data.model.UserDto
 
-data class UiState<T>(
+data class UserUiState(
     val loading: Boolean = false,
-    val data: T? = null,
+    val user: UserDto? = null,
     val error: String? = null
 )
