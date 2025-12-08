@@ -12,6 +12,7 @@ import mx.edu.laberinto_giroscopio.data.repository.UserRepository
 import mx.edu.laberinto_giroscopio.ui.state.LoginUiState
 import mx.edu.laberinto_giroscopio.ui.state.RegisterUiState
 import mx.edu.laberinto_giroscopio.ui.state.UserUiState
+import java.io.IOException
 
 class UserViewModel : ViewModel() {
 
@@ -26,79 +27,118 @@ class UserViewModel : ViewModel() {
     private val _userState = MutableStateFlow(UserUiState())
     val userState: StateFlow<UserUiState> = _userState
 
-
     fun login(username: String, password: String) {
         _loginState.value = LoginUiState(loading = true)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val response = repo.getUsers()
+            try {
 
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    val users = response.body() ?: emptyList()
+                val response = repo.getUsers()
 
-                    val user = users.find {
-                        it.username == username && it.password == password
-                    }
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val users = response.body() ?: emptyList()
 
-                    if (user != null) {
-                        _loginState.value = LoginUiState(
-                            loading = false,
-                            success = true,
-                            user = user
-                        )
-                        _userState.value = UserUiState(user = user)
+                        val user = users.find {
+                            it.username == username && it.password == password
+                        }
+
+                        if (user != null) {
+                            _loginState.value = LoginUiState(
+                                loading = false,
+                                success = true,
+                                user = user
+                            )
+                            _userState.value = UserUiState(user = user)
+
+                        } else {
+                            _loginState.value = LoginUiState(
+                                loading = false,
+                                error = "Usuario o contraseña incorrectos"
+                            )
+                        }
 
                     } else {
                         _loginState.value = LoginUiState(
                             loading = false,
-                            error = "Usuario o contraseña incorrectos"
+                            error = "Error del servidor: ${response.code()}"
                         )
                     }
+                }
 
-                } else {
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) {
                     _loginState.value = LoginUiState(
                         loading = false,
-                        error = "Error ${response.code()}"
+                        error = "No hay conexión a internet"
+                    )
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _loginState.value = LoginUiState(
+                        loading = false,
+                        error = "Ocurrió un error inesperado"
                     )
                 }
             }
         }
     }
-
-
     fun register(username: String, password: String) {
         _registerState.value = RegisterUiState(loading = true)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val newUser = UserDto(id = null, username = username, password = password)
+            try {
 
-            val response = repo.createUser(newUser)
+                val newUser = UserDto(
+                    id = null,
+                    username = username,
+                    password = password
+                )
 
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
+                val response = repo.createUser(newUser)
+
+                withContext(Dispatchers.Main) {
+
+                    if (response.isSuccessful) {
+                        _registerState.value = RegisterUiState(
+                            loading = false,
+                            success = true,
+                            user = response.body()
+                        )
+
+                    } else if (response.code() == 409) {
+                        _registerState.value = RegisterUiState(
+                            loading = false,
+                            error = "El usuario ya existe"
+                        )
+
+                    } else {
+                        _registerState.value = RegisterUiState(
+                            loading = false,
+                            error = "Error en el servidor: ${response.code()}"
+                        )
+                    }
+                }
+
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) {
                     _registerState.value = RegisterUiState(
                         loading = false,
-                        success = true,
-                        user = response.body()
+                        error = "No hay conexión a internet"
                     )
+                }
 
-                } else if (response.code() == 409) {
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
                     _registerState.value = RegisterUiState(
                         loading = false,
-                        error = "El usuario ya existe"
-                    )
-
-                } else {
-                    _registerState.value = RegisterUiState(
-                        loading = false,
-                        error = "Error al registrar: ${response.code()}"
+                        error = "Ocurrió un error inesperado"
                     )
                 }
             }
         }
     }
-
 
     fun clearLoginError() {
         _loginState.value = _loginState.value.copy(error = null)
@@ -109,17 +149,10 @@ class UserViewModel : ViewModel() {
     }
 
     fun logout() {
-        _userState.value = UserUiState(
-            loading = false,
-            user = null,
-            error = null
-        )
+        _userState.value = UserUiState(user = null)
     }
 
     fun resetLoginState() {
         _loginState.value = LoginUiState()
     }
-
-
-
 }
