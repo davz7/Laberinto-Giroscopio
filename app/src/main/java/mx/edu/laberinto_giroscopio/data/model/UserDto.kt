@@ -2,7 +2,6 @@ package mx.edu.laberinto_giroscopio.data.model
 
 data class UserDto(
     val id: Long? = null,
-    val name: String,
+    val username: String,
     val password: String
 )
-

@@ -9,57 +9,117 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mx.edu.laberinto_giroscopio.data.model.UserDto
 import mx.edu.laberinto_giroscopio.data.repository.UserRepository
+import mx.edu.laberinto_giroscopio.ui.state.LoginUiState
+import mx.edu.laberinto_giroscopio.ui.state.RegisterUiState
+import mx.edu.laberinto_giroscopio.ui.state.UserUiState
 
 class UserViewModel : ViewModel() {
 
     private val repo = UserRepository()
 
-    private val _currentUser = MutableStateFlow<UserDto?>(null)
-    val currentUser: StateFlow<UserDto?> = _currentUser
+    private val _loginState = MutableStateFlow(LoginUiState())
+    val loginState: StateFlow<LoginUiState> = _loginState
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    private val _registerState = MutableStateFlow(RegisterUiState())
+    val registerState: StateFlow<RegisterUiState> = _registerState
 
-    fun login(name: String, password: String) {
+    private val _userState = MutableStateFlow(UserUiState())
+    val userState: StateFlow<UserUiState> = _userState
+
+
+    fun login(username: String, password: String) {
+        _loginState.value = LoginUiState(loading = true)
+
         viewModelScope.launch(Dispatchers.IO) {
-
             val response = repo.getUsers()
 
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     val users = response.body() ?: emptyList()
 
-                    val found = users.find { it.name == name && it.password == password }
+                    val user = users.find {
+                        it.username == username && it.password == password
+                    }
 
-                    if (found != null) {
-                        _currentUser.value = found
-                        _error.value = null
+                    if (user != null) {
+                        _loginState.value = LoginUiState(
+                            loading = false,
+                            success = true,
+                            user = user
+                        )
+                        _userState.value = UserUiState(user = user)
+
                     } else {
-                        _error.value = "Usuario o contraseña incorrectos"
+                        _loginState.value = LoginUiState(
+                            loading = false,
+                            error = "Usuario o contraseña incorrectos"
+                        )
                     }
 
                 } else {
-                    _error.value = "Error HTTP: ${response.code()}"
+                    _loginState.value = LoginUiState(
+                        loading = false,
+                        error = "Error ${response.code()}"
+                    )
                 }
             }
         }
     }
 
-    fun register(name: String, password: String) {
-        viewModelScope.launch(Dispatchers.IO) {
 
-            val response = repo.createUser(
-                UserDto(name = name, password = password)
-            )
+    fun register(username: String, password: String) {
+        _registerState.value = RegisterUiState(loading = true)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val newUser = UserDto(id = null, username = username, password = password)
+
+            val response = repo.createUser(newUser)
 
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
-                    _currentUser.value = response.body()
-                    _error.value = null
+                    _registerState.value = RegisterUiState(
+                        loading = false,
+                        success = true,
+                        user = response.body()
+                    )
+
+                } else if (response.code() == 409) {
+                    _registerState.value = RegisterUiState(
+                        loading = false,
+                        error = "El usuario ya existe"
+                    )
+
                 } else {
-                    _error.value = "Error al registrar: ${response.code()}"
+                    _registerState.value = RegisterUiState(
+                        loading = false,
+                        error = "Error al registrar: ${response.code()}"
+                    )
                 }
             }
         }
     }
+
+
+    fun clearLoginError() {
+        _loginState.value = _loginState.value.copy(error = null)
+    }
+
+    fun clearRegisterError() {
+        _registerState.value = _registerState.value.copy(error = null)
+    }
+
+    fun logout() {
+        _userState.value = UserUiState(
+            loading = false,
+            user = null,
+            error = null
+        )
+    }
+
+    fun resetLoginState() {
+        _loginState.value = LoginUiState()
+    }
+
+
+
 }

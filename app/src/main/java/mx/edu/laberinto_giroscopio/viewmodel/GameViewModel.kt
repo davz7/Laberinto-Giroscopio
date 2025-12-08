@@ -1,63 +1,65 @@
 package mx.edu.laberinto_giroscopio.viewmodel
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import mx.edu.laberinto_giroscopio.data.model.Levels
 
 class GameViewModel : ViewModel() {
 
-    // Tamaño real de la celda en la UI (45dp → 45f px lógicos)
-    private val tileSize = 45f
-    private val ballRadius = 20f
-    private val _maze = mutableStateOf(Levels.level1)
-    val maze: State<Array<IntArray>> = _maze
+    private var levelIndex = 0
 
-    private val _ballPos = mutableStateOf(Offset.Zero)
-    val ballPos: State<Offset> = _ballPos
+    private val _maze = mutableStateOf(Levels.allLevels[levelIndex])
+    val maze = _maze
 
-    init {
-        val start = findStart()
-        val centerFix = (tileSize / 2f) - ballRadius
+    private val _ballPos = mutableStateOf(BallPosition(60f, 60f))
+    val ballPos = _ballPos
 
-        _ballPos.value = Offset(
-            x = start.first * tileSize + centerFix,
-            y = start.second * tileSize + centerFix
-        )
-    }
+    var currentScore: Int = 0
+        private set
 
     fun move(x: Float, y: Float) {
-        // Ajusta la velocidad para que coincida con el nuevo tamaño
-        val speed = 10f
 
-        val nx = _ballPos.value.x + (-y * speed)
-        val ny = _ballPos.value.y + (x * speed)
+        val speed = 3f
+        val newX = _ballPos.value.x + (-x * speed)
+        val newY = _ballPos.value.y + (y * speed)
 
-        if (!isWall(nx, ny)) {
-            _ballPos.value = Offset(nx, ny)
-        }
-    }
+        val cellSize = 45f
 
-    private fun isWall(x: Float, y: Float): Boolean {
-        val col = (x / tileSize).toInt()
-        val row = (y / tileSize).toInt()
+        val centerX = newX + (cellSize / 2)
+        val centerY = newY + (cellSize / 2)
 
-        val m = _maze.value
+        val col = (centerX / cellSize).toInt()
+        val row = (centerY / cellSize).toInt()
 
-        if (row < 0 || row >= m.size || col < 0 || col >= m[row].size)
-            return true
+        val mazeGrid = _maze.value
 
-        return m[row][col] == 1
-    }
+        if (row in mazeGrid.indices && col in mazeGrid[0].indices) {
 
-    private fun findStart(): Pair<Int, Int> {
-        val m = _maze.value
-        for (r in m.indices) {
-            for (c in m[r].indices) {
-                if (m[r][c] == 2) return c to r
+            val cell = mazeGrid[row][col]
+
+            if (cell == 1) {
+                return
             }
         }
-        return 1 to 1
+
+        _ballPos.value = BallPosition(newX, newY)
+        currentScore += 1
+    }
+
+
+    fun loadNextLevel() {
+        if (levelIndex < Levels.allLevels.lastIndex) {
+            levelIndex++
+        }
+
+        _maze.value = Levels.allLevels[levelIndex]
+        resetBall()
+    }
+
+    private fun resetBall() {
+        _ballPos.value = BallPosition(60f, 60f)
+        currentScore = 0
     }
 }
+
+data class BallPosition(val x: Float, val y: Float)

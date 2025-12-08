@@ -12,6 +12,8 @@ class GyroscopeSensorManager(
     private val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val gyro = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
+    private val sensitivity = 5f
+
     fun start() {
         if (gyro == null) {
             onUnavailable()
@@ -25,7 +27,14 @@ class GyroscopeSensorManager(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
     override fun onSensorChanged(event: SensorEvent?) {
-        event?.let { onRotation(it.values[0], it.values[1], it.values[2]) }
+        event?.let {
+            val x = it.values[0] * sensitivity
+            val y = it.values[1] * sensitivity
+            val z = it.values[2] * sensitivity
+
+            onRotation(x, y, z)
+        }
     }
 }
