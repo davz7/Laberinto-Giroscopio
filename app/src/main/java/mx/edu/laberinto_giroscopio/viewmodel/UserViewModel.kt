@@ -170,11 +170,17 @@ class UserViewModel : ViewModel() {
         _registerState.value = _registerState.value.copy(error = null)
     }
 
-    fun logout() {
-        _userState.value = UserUiState(user = null)
-    }
-
     fun resetLoginState() {
         _loginState.value = LoginUiState()
+    }
+
+    fun resetRegisterState() {
+        _registerState.value = RegisterUiState()
+    }
+
+    fun logout() {
+        _userState.value = UserUiState()
+        resetLoginState()
+        resetRegisterState()
     }
 }

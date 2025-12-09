@@ -22,7 +22,7 @@ fun LoginScreen(nav: NavController, vm: UserViewModel) {
             nav.navigate("home") {
                 popUpTo("login") { inclusive = true }
             }
-            vm.resetLoginState()  // Muy importante
+            vm.resetLoginState()
         }
     }
 
@@ -77,7 +77,9 @@ fun LoginScreen(nav: NavController, vm: UserViewModel) {
 
                 AppOutlinedButton(
                     text = "Registrarse",
-                    onClick = { nav.navigate("register") },
+                    onClick = {
+                        vm.resetRegisterState()
+                        nav.navigate("register") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
