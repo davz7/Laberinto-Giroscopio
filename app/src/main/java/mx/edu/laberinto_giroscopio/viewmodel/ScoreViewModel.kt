@@ -7,12 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import mx.edu.laberinto_giroscopio.data.model.ScoreDto
 import mx.edu.laberinto_giroscopio.data.repository.ScoreRepository
+import mx.edu.laberinto_giroscopio.ui.components.ScoresUiState
 
-data class ScoresUiState(
-    val loading: Boolean = false,
-    val scores: List<ScoreDto> = emptyList(),
-    val error: String? = null
-)
 
 class ScoreViewModel : ViewModel() {
 
