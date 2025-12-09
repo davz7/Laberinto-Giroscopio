@@ -25,7 +25,7 @@ fun ScoresScreen(vm: ScoreViewModel, userVM: UserViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF101010)),
+            .background(Color(0xFFFFFFFF)),
         contentAlignment = Alignment.Center
     ) {
 

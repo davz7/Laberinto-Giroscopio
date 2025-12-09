@@ -39,13 +39,13 @@ class ScoreViewModel : ViewModel() {
         }
     }
 
-    fun submitScore(username: String, score: Int) {
+    fun submitScore(userId: Long, score: Int) {
         viewModelScope.launch {
             try {
                 repo.submitScore(
                     ScoreDto(
                         id = null,
-                        username = username,
+                        userId = userId,
                         score = score
                     )
                 )
@@ -53,7 +53,6 @@ class ScoreViewModel : ViewModel() {
             } catch (_: Exception) { }
         }
     }
-    // Método para actualizar el puntaje local
     fun updateScore(score: Int) {
         _currentScore.value = score
     }

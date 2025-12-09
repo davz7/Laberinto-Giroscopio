@@ -12,11 +12,22 @@ import mx.edu.laberinto_giroscopio.viewmodel.ScoreViewModel
 import mx.edu.laberinto_giroscopio.viewmodel.UserViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+
 @Composable
 fun AppNavigation() {
 
     val nav = rememberNavController()
     val userVM: UserViewModel = viewModel()
+
+    val scoreVM: ScoreViewModel = viewModel()
+
+    val gameVM: GameViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                GameViewModel(scoreVM)
+            }
+        }
+    )
 
     val isLoggedIn = userVM.userState.collectAsState().value.user != null
 
@@ -38,50 +49,21 @@ fun AppNavigation() {
         }
 
         composable("game") {
-            // 1. Primero creamos el ScoreViewModel porque el GameViewModel lo necesita
-            val scoreVM: ScoreViewModel = viewModel()
-
-            // 2. Creamos el GameViewModel usando el factory para pasarle el scoreVM
-            val gameVM: GameViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer {
-                        GameViewModel(scoreVM)
-                    }
-                }
-            )
-
             GameScreen(
                 vm = gameVM,
                 userVM = userVM,
-                scoreVM = scoreVM, // Pasamos el mismo scoreVM que creamos arriba
+                scoreVM = scoreVM,
                 onBack = { nav.popBackStack() },
                 onLevelCompleted = { nav.navigate("levelCompleted") }
             )
         }
 
         composable("scores") {
-            val scoreVM: ScoreViewModel = viewModel()
             ScoresScreen(vm = scoreVM, userVM = userVM)
         }
 
         composable("levelCompleted") {
-            // AQUI TAMBIÉN TRONABA: Necesitas hacer lo mismo si vas a crear un GameViewModel aquí
-
-            // Nota: Al usar viewModel() aquí, estás creando una instancia NUEVA del juego.
-            // Si quieres compartir el estado del juego anterior, necesitarías una solución más avanzada,
-            // pero esto arreglará el error de cierre inesperado por ahora.
-
-            val scoreVM: ScoreViewModel = viewModel()
-
-            val gameVM: GameViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer {
-                        GameViewModel(scoreVM)
-                    }
-                }
-            )
-
-            LevelCompletedScreen(nav = nav, userVM = userVM, gameVM = gameVM)
+            LevelCompletedScreen(nav = nav, userVM = userVM, gameVM = gameVM, scoreVM = scoreVM)
         }
     }
 }

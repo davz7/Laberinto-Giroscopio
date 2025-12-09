@@ -5,21 +5,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mx.edu.laberinto_giroscopio.ui.components.*
+import mx.edu.laberinto_giroscopio.viewmodel.ScoreViewModel
 import mx.edu.laberinto_giroscopio.viewmodel.UserViewModel
 
 @Composable
 fun LevelCompletedScreen(
     nav: NavController,
     userVM: UserViewModel,
-    gameVM: GameViewModel
+    gameVM: GameViewModel,
+    scoreVM: ScoreViewModel
 ) {
     val user = userVM.userState.collectAsState().value.user
-    val username = user?.username ?: "Jugador"
     val score = gameVM.currentScore
+
+    LaunchedEffect(Unit) {
+        if (user?.id != null) {
+            scoreVM.submitScore(userId = user.id, score = score)
+        }
+    }
 
     AppBackground {
 
@@ -35,7 +41,7 @@ fun LevelCompletedScreen(
                 AppTitle("¡Nivel Completado!")
                 Spacer(Modifier.height(12.dp))
 
-                AppSubtitle("Bien hecho, $username")
+                AppSubtitle("Bien hecho, ${user?.username ?: "Jugador"}")
                 Spacer(Modifier.height(30.dp))
 
                 AppSubtitle("Puntuación obtenida:")
