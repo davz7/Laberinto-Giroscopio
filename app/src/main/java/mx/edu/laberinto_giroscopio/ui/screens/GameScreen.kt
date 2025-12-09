@@ -1,5 +1,6 @@
     package mx.edu.laberinto_giroscopio.ui.screens
 
+    import GameViewModel
     import androidx.compose.foundation.layout.*
     import androidx.compose.foundation.background
     import androidx.compose.material3.Text
@@ -9,7 +10,6 @@
     import androidx.compose.ui.graphics.Color
     import androidx.compose.ui.platform.LocalContext
     import androidx.compose.ui.unit.dp
-    import mx.edu.laberinto_giroscopio.viewmodel.GameViewModel
     import mx.edu.laberinto_giroscopio.viewmodel.ScoreViewModel
     import mx.edu.laberinto_giroscopio.viewmodel.UserViewModel
     import mx.edu.laberinto_giroscopio.data.sensors.GyroscopeSensorManager

@@ -1,30 +1,30 @@
-package mx.edu.laberinto_giroscopio.viewmodel
-
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import mx.edu.laberinto_giroscopio.data.model.BallPosition
 import mx.edu.laberinto_giroscopio.data.model.Levels
+import mx.edu.laberinto_giroscopio.viewmodel.ScoreViewModel
 
-class GameViewModel : ViewModel() {
+class GameViewModel(private val scoreViewModel: ScoreViewModel) : ViewModel() {
 
     private var levelIndex = 0
 
     private val _maze = mutableStateOf(Levels.allLevels[levelIndex])
     val maze = _maze
 
-    private val _ballPos = mutableStateOf(BallPosition(60f, 60f))
+    // Usamos BallPosition para almacenar la posición de la bola
+    private val _ballPos = mutableStateOf(BallPosition(60f, 60f))  // Inicializa en (60, 60)
     val ballPos = _ballPos
 
     var currentScore: Int = 0
         private set
 
+    // Función para mover la bola
     fun move(x: Float, y: Float) {
-
         val speed = 3f
         val newX = _ballPos.value.x + (-x * speed)
         val newY = _ballPos.value.y + (y * speed)
 
         val cellSize = 45f
-
         val centerX = newX + (cellSize / 2)
         val centerY = newY + (cellSize / 2)
 
@@ -33,20 +33,29 @@ class GameViewModel : ViewModel() {
 
         val mazeGrid = _maze.value
 
+        // Verificación de límites
         if (row in mazeGrid.indices && col in mazeGrid[0].indices) {
-
             val cell = mazeGrid[row][col]
-
             if (cell == 1) {
                 return
             }
         }
 
-        _ballPos.value = BallPosition(newX, newY)
-        currentScore += 1
+        // Actualizar la posición de la bola
+        val maxX = mazeGrid[0].size * cellSize
+        val maxY = mazeGrid.size * cellSize
+
+        if (newX in 0f..maxX && newY in 0f..maxY) {
+            _ballPos.value =
+                BallPosition(newX, newY)  // Aquí se actualiza la posición correctamente
+            currentScore += 1
+
+            // Actualizar la puntuación en ScoreViewModel
+            scoreViewModel.updateScore(currentScore)
+        }
     }
 
-
+    // Función para cargar el siguiente nivel
     fun loadNextLevel() {
         if (levelIndex < Levels.allLevels.lastIndex) {
             levelIndex++
@@ -57,9 +66,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun resetBall() {
-        _ballPos.value = BallPosition(60f, 60f)
+        _ballPos.value = BallPosition(60f, 60f)  // Reiniciar la posición de la bola
         currentScore = 0
     }
 }
-
-data class BallPosition(val x: Float, val y: Float)

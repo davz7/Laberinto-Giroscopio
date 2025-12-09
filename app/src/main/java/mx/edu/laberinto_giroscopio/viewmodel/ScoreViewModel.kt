@@ -21,6 +21,9 @@ class ScoreViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ScoresUiState())
     val uiState: StateFlow<ScoresUiState> = _uiState
 
+    // Estado para almacenar el puntaje actual
+    private val _currentScore = MutableStateFlow(0)
+    val currentScore: StateFlow<Int> get() = _currentScore
     fun loadScores() {
         viewModelScope.launch {
             _uiState.value = ScoresUiState(loading = true)
@@ -53,5 +56,9 @@ class ScoreViewModel : ViewModel() {
                 loadScores()
             } catch (_: Exception) { }
         }
+    }
+    // Método para actualizar el puntaje local
+    fun updateScore(score: Int) {
+        _currentScore.value = score
     }
 }

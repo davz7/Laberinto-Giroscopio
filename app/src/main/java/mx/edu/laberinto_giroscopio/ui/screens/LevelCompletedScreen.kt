@@ -1,5 +1,6 @@
 package mx.edu.laberinto_giroscopio.ui.screens
 
+import GameViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import mx.edu.laberinto_giroscopio.ui.components.*
 import mx.edu.laberinto_giroscopio.viewmodel.UserViewModel
-import mx.edu.laberinto_giroscopio.viewmodel.GameViewModel
 
 @Composable
 fun LevelCompletedScreen(
