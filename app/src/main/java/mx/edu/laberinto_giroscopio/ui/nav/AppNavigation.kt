@@ -59,7 +59,8 @@ fun AppNavigation() {
         }
 
         composable("scores") {
-            ScoresScreen(vm = scoreVM, userVM = userVM)
+            val scoreVM: ScoreViewModel = viewModel()
+            ScoresScreen(nav = nav, vm = scoreVM, userVM = userVM)
         }
 
         composable("levelCompleted") {

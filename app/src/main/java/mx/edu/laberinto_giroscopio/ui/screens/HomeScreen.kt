@@ -3,7 +3,7 @@ package mx.edu.laberinto_giroscopio.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +22,36 @@ fun HomeScreen(nav: NavController, vm: UserViewModel) {
     val userState = vm.userState.collectAsState().value
     val username = userState.user?.username ?: "Jugador"
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar Cuenta") },
+            text = { Text("¿Estás seguro? Se borrará tu usuario y todos tus puntajes permanentemente.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        vm.deleteAccount {
+                            nav.navigate("login") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Eliminar", color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     AppBackground {
         Box(
             modifier = Modifier
@@ -34,7 +64,7 @@ fun HomeScreen(nav: NavController, vm: UserViewModel) {
                 AppTitle("Bienvenido, $username")
                 Spacer(Modifier.height(40.dp))
 
-                    Column(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .background(
@@ -48,9 +78,7 @@ fun HomeScreen(nav: NavController, vm: UserViewModel) {
                     AppButton(
                         text = "Jugar",
                         onClick = { nav.navigate("game") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp)
+                        modifier = Modifier.fillMaxWidth().height(55.dp)
                     )
 
                     Spacer(Modifier.height(20.dp))
@@ -58,24 +86,36 @@ fun HomeScreen(nav: NavController, vm: UserViewModel) {
                     AppButton(
                         text = "Puntajes",
                         onClick = { nav.navigate("scores") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp)
+                        modifier = Modifier.fillMaxWidth().height(55.dp)
                     )
 
                     Spacer(Modifier.height(40.dp))
 
-                        AppOutlinedButton(
-                            text = "Cerrar sesión",
-                            onClick = { vm.logout() },
-                            modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .height(55.dp)
-                        )
+                    AppOutlinedButton(
+                        text = "Cerrar sesión",
+                        onClick = {
+                            vm.logout()
+                            nav.navigate("login") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.8f).height(55.dp)
+                    )
 
+                    Spacer(Modifier.height(15.dp))
 
-
+                    Button(
+                        onClick = { showDeleteDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFCCCC),
+                            contentColor = Color.Red
+                        ),
+                        shape = RoundedCornerShape(15.dp),
+                        modifier = Modifier.fillMaxWidth(0.8f).height(55.dp)
+                    ) {
+                        Text("Eliminar mi cuenta")
                     }
+                }
             }
         }
     }

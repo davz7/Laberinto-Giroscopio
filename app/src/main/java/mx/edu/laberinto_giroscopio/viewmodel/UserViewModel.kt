@@ -140,6 +140,28 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    fun deleteAccount(onSuccess: () -> Unit) {
+        val currentUser = _userState.value.user ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = repo.deleteUser(currentUser.id ?: 0)
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        logout()
+                        onSuccess()
+                    } else {
+                        _userState.value = _userState.value.copy(error = "Error al eliminar: ${response.code()}")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _userState.value = _userState.value.copy(error = "Error de conexión")
+                }
+            }
+        }
+    }
+
     fun clearLoginError() {
         _loginState.value = _loginState.value.copy(error = null)
     }
